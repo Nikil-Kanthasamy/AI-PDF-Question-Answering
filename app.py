@@ -19,7 +19,7 @@ st.markdown("""
 [data-testid="stChatMessage"]{border-radius:14px}
 </style>
 <div class="hero"><h1>📚 Ask your PDFs</h1>
-<div class="muted">Private local document intelligence · RAG · Ollama</div></div>
+<div class="muted">Private local document intelligence · RAG · Ollama · OCR</div></div>
 """, unsafe_allow_html=True)
 
 index_directory = Path(os.getenv("RAG_DATA_DIR", "./data")) / "index"
@@ -84,7 +84,10 @@ with st.sidebar:
                 st.warning(failure)
         if total:
             st.rerun()
-    st.caption("Scanned/image-only PDFs need OCR; this version extracts selectable text.")
+    st.caption(
+        "Selectable-text PDFs are extracted directly. Scanned or image-only pages "
+        "are processed with Tesseract OCR (English by default)."
+    )
 
 st.markdown("### 2 · Ask a question")
 if not store.records:
