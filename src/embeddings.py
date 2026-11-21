@@ -1,10 +1,11 @@
 import os
+
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
 
 class EmbeddingModel:
     """Local sentence embeddings; model weights are cached on first load."""
+
     def __init__(self, model_name: str | None = None):
         self.model_name = model_name or os.getenv(
             "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
@@ -13,6 +14,13 @@ class EmbeddingModel:
 
     def _load(self):
         if self._model is None:
+            try:
+                from sentence_transformers import SentenceTransformer
+            except ImportError as exc:
+                raise RuntimeError(
+                    "Sentence Transformers is not installed. Install dependencies with "
+                    "'pip install -r requirements.txt'."
+                ) from exc
             self._model = SentenceTransformer(self.model_name, device="cpu")
         return self._model
 
