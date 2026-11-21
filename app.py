@@ -1,6 +1,7 @@
 import os
 import tempfile
 from pathlib import Path
+
 import streamlit as st
 
 from src.pdf_processor import extract_pdf_pages
@@ -44,29 +45,35 @@ with st.sidebar:
         pipeline = RAGPipeline(store, model_name=model_name)
         progress = st.progress(0, text="Preparing documents…")
         total = 0
-        try:
-            for i, uploaded in enumerate(uploads):
-                if uploaded.size > 30 * 1024 * 1024:
-                    st.warning(f"Skipped {uploaded.name}: larger than 30 MB.")
-                    continue
-                temp_path = None
-                try:
-                    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-                        tmp.write(uploaded.getvalue())
-                        temp_path = tmp.name
-                    pages = extract_pdf_pages(temp_path)
-                    for page in pages:
-                        page["source"] = uploaded.name
-                    chunks = chunk_pages(pages, chunk_size, overlap)
-                    total += pipeline.index(chunks)
-                finally:
-                    if temp_path:
-                        Path(temp_path).unlink(missing_ok=True)
-                progress.progress((i + 1) / len(uploads), text=f"Processed {uploaded.name}")
+        failures = []
+        for i, uploaded in enumerate(uploads):
+            if uploaded.size > 30 * 1024 * 1024:
+                failures.append(f"{uploaded.name}: larger than the 30 MB limit.")
+                progress.progress((i + 1) / len(uploads), text=f"Skipped {uploaded.name}")
+                continue
+            temp_path = None
+            try:
+                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+                    tmp.write(uploaded.getvalue())
+                    temp_path = tmp.name
+                pages = extract_pdf_pages(temp_path)
+                for page in pages:
+                    page["source"] = uploaded.name
+                chunks = chunk_pages(pages, chunk_size, overlap)
+                total += pipeline.index(chunks)
+            except Exception as exc:
+                failures.append(f"{uploaded.name}: {exc}")
+            finally:
+                if temp_path:
+                    Path(temp_path).unlink(missing_ok=True)
+            progress.progress((i + 1) / len(uploads), text=f"Processed {uploaded.name}")
+        if total:
             st.success(f"Indexed {total} passages.")
+        if failures:
+            for failure in failures:
+                st.warning(failure)
+        if total:
             st.rerun()
-        except Exception as exc:
-            st.error(str(exc))
     st.caption("Scanned/image-only PDFs need OCR; this version extracts selectable text.")
 
 st.markdown("### 2 · Ask a question")
