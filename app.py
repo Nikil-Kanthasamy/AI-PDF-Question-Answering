@@ -22,7 +22,17 @@ st.markdown("""
 <div class="muted">Private local document intelligence · RAG · Ollama</div></div>
 """, unsafe_allow_html=True)
 
-store = LocalVectorStore(Path(os.getenv("RAG_DATA_DIR", "./data")) / "index")
+index_directory = Path(os.getenv("RAG_DATA_DIR", "./data")) / "index"
+try:
+    store = LocalVectorStore(index_directory)
+except ValueError as exc:
+    st.error(f"Could not load the local PDF index: {exc}")
+    st.info(
+        f"To rebuild the index, stop the app, remove the folder "
+        f"`{index_directory}`, then restart and index your PDFs again."
+    )
+    st.stop()
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
