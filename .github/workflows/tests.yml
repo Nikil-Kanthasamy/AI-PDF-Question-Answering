@@ -27,4 +27,4 @@ jobs:
           python -m pip install --upgrade pip
           pip install "numpy>=1.26,<3" "pymupdf>=1.24,<2" "requests>=2.31,<3" "pytest>=8,<9"
       - name: Run unit tests
-        run: pytest -q
+        run: python -m pytest -q
