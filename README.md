@@ -65,7 +65,7 @@ tests/                 Unit tests
 ## Configuration
 Optional environment variables: `OLLAMA_BASE_URL` (default `http://localhost:11434`), `OLLAMA_MODEL` (default `qwen2.5:0.5b`), `EMBEDDING_MODEL` (default `sentence-transformers/all-MiniLM-L6-v2`), and `RAG_DATA_DIR` (default `./data`).
 
-Run tests with `pytest -q`.
+Run the automated unit tests with `pytest -q`. The suite covers page-aware chunking, PDF extraction, vector-index persistence and validation, retrieval, and mocked Ollama responses.
 
 ## Project webpage
 The static landing page is in `docs/`. Enable GitHub Pages in **Settings → Pages**, choose **GitHub Actions** as the source, and the included workflow will publish it on pushes to `main`.
